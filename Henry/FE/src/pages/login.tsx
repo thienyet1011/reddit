@@ -77,41 +77,45 @@ const Login = () => {
         })
       }
       <Formik initialValues={initialValues} onSubmit={onLoginSubmit}>
-        {({ isSubmitting }) => (
-          <Form>
-            <Box>
-              <InputField
-                label="Username or Email"
-                name="usernameOrEmail"
-                placeholder="Username or Email"
-              />
-            </Box>
+        {({ values, isSubmitting }) => {
+          console.log('values: ', values);
+          
+          return (
+            <Form>
+              <Box>
+                <InputField
+                  label="Username or Email"
+                  name="usernameOrEmail"
+                  placeholder="Username or Email"
+                />
+              </Box>
 
-            <Box mt={4}>
-              <InputField
-                label="Password"
-                name="password"
-                placeholder="Password"
-                type="password"
-              />
-            </Box>
+              <Box mt={4}>
+                <InputField
+                  label="Password"
+                  name="password"
+                  placeholder="Password"
+                  type="password"
+                />
+              </Box>
 
-            <Flex mt={2}>
-              <NextLink href="/forgot-password" passHref>
+              <Flex mt={2}>
+                <NextLink href="/forgot-password" passHref>
                   <Link ml="auto">Forgot password</Link>
-              </NextLink>
-            </Flex>
+                </NextLink>
+              </Flex>
 
-            <Button
-              type="submit"
-              colorScheme="teal"
-              mt={4}
-              isLoading={isSubmitting}
-            >
-              Login
-            </Button>
-          </Form>
-        )}
+              <Button
+                type="submit"
+                colorScheme="teal"
+                mt={4}
+                isLoading={isSubmitting}
+              >
+                Login
+              </Button>
+            </Form>
+          );
+        }}
       </Formik>
     </Container>
   );

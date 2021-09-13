@@ -31,8 +31,8 @@ function createApolloClient() {
               // existing: current data in cache
               // incoming: new data 
               merge(existing, incoming) {
-                console.log('existing: ', existing);
-                console.log('incoming: ', incoming);
+                // console.log('existing: ', existing);
+                // console.log('incoming: ', incoming);
 
                 let paginatedPosts: Post[] = [];
                 if (existing && existing.paginatedPosts) {
