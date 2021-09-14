@@ -1,9 +1,9 @@
-import { Post, Query } from './../generated/graphql';
-import { useMemo } from 'react';
 import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 // import { concatPagination } from '@apollo/client/utilities';
 import merge from 'deepmerge';
 import isEqual from 'lodash/isEqual';
+import { useMemo } from 'react';
+import { Post } from './../generated/graphql';
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 
@@ -85,7 +85,7 @@ export function initializeApollo(initialState: NormalizedCacheObject | null = nu
 }
 
 export function addApolloState(client: ApolloClient<NormalizedCacheObject>, 
-    pageProps: {props: IApolloStateProps}) {
+    pageProps: { props: IApolloStateProps }) {
   if (pageProps?.props) {
     pageProps.props[APOLLO_STATE_PROP_NAME] = client.cache.extract()
   }

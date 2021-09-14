@@ -6,6 +6,7 @@ fragment postWithUser on Post {
     updatedAt
     textSnippet
     user {
-    username
+        id
+        username
     }
 }
