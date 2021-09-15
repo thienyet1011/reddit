@@ -176,7 +176,11 @@ export type UserMutationResponse = IMutationResponse & {
 
 export type FieldErrorFragment = { __typename?: 'FieldError', field: string, message: string };
 
-export type MutationStatusesFragment = { __typename?: 'UserMutationResponse', code: number, success: boolean, message?: Maybe<string> };
+export type UserMutationStatusesFragment = { __typename?: 'UserMutationResponse', code: number, success: boolean, message?: Maybe<string> };
+
+export type PostMutationStatusesFragment = { __typename?: 'PostMutationResponse', code: number, success: boolean, message?: Maybe<string> };
+
+export type PostMutationResponseFragment = { __typename?: 'PostMutationResponse', code: number, success: boolean, message?: Maybe<string>, post?: Maybe<{ __typename?: 'Post', id: string, title: string, text: string, createdAt: any, updatedAt: any, textSnippet: string, user: { __typename?: 'User', id: string, username: string } }>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>> };
 
 export type PostWithUserFragment = { __typename?: 'Post', id: string, title: string, text: string, createdAt: any, updatedAt: any, textSnippet: string, user: { __typename?: 'User', id: string, username: string } };
 
@@ -199,6 +203,13 @@ export type CreatePostMutationVariables = Exact<{
 
 
 export type CreatePostMutation = { __typename?: 'Mutation', createPost: { __typename?: 'PostMutationResponse', code: number, success: boolean, message?: Maybe<string>, post?: Maybe<{ __typename?: 'Post', id: string, title: string, text: string, createdAt: any, updatedAt: any, textSnippet: string, user: { __typename?: 'User', id: string, username: string } }>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>> } };
+
+export type DeletePostMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeletePostMutation = { __typename?: 'Mutation', deletePost: { __typename?: 'PostMutationResponse', code: number, success: boolean, message?: Maybe<string> } };
 
 export type ForgotPasswordMutationVariables = Exact<{
   forgotPasswordInput: ForgotPasswordInput;
@@ -226,6 +237,13 @@ export type RegisterMutationVariables = Exact<{
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserMutationResponse', code: number, success: boolean, message?: Maybe<string>, user?: Maybe<{ __typename?: 'User', id: string, username: string, email: string }>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>> } };
 
+export type UpdatePostMutationVariables = Exact<{
+  updatePostInput: UpdatePostInput;
+}>;
+
+
+export type UpdatePostMutation = { __typename?: 'Mutation', updatePost: { __typename?: 'PostMutationResponse', code: number, success: boolean, message?: Maybe<string>, post?: Maybe<{ __typename?: 'Post', id: string, title: string, text: string, createdAt: any, updatedAt: any, textSnippet: string, user: { __typename?: 'User', id: string, username: string } }>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>> } };
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -244,7 +262,7 @@ export type PostQueryVariables = Exact<{
 }>;
 
 
-export type PostQuery = { __typename?: 'Query', post?: Maybe<{ __typename?: 'Post', id: string, title: string, text: string }> };
+export type PostQuery = { __typename?: 'Query', post?: Maybe<{ __typename?: 'Post', id: string, title: string, text: string, userId: number }> };
 
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
@@ -254,6 +272,13 @@ export type PostsQueryVariables = Exact<{
 
 export type PostsQuery = { __typename?: 'Query', posts?: Maybe<{ __typename?: 'PaginationPosts', totalCount: number, cursor: any, hasMore: boolean, paginatedPosts: Array<{ __typename?: 'Post', id: string, title: string, text: string, createdAt: any, updatedAt: any, textSnippet: string, user: { __typename?: 'User', id: string, username: string } }> }> };
 
+export const PostMutationStatusesFragmentDoc = gql`
+    fragment postMutationStatuses on PostMutationResponse {
+  code
+  success
+  message
+}
+    `;
 export const PostWithUserFragmentDoc = gql`
     fragment postWithUser on Post {
   id
@@ -268,8 +293,27 @@ export const PostWithUserFragmentDoc = gql`
   }
 }
     `;
-export const MutationStatusesFragmentDoc = gql`
-    fragment mutationStatuses on UserMutationResponse {
+export const FieldErrorFragmentDoc = gql`
+    fragment fieldError on FieldError {
+  field
+  message
+}
+    `;
+export const PostMutationResponseFragmentDoc = gql`
+    fragment postMutationResponse on PostMutationResponse {
+  ...postMutationStatuses
+  post {
+    ...postWithUser
+  }
+  errors {
+    ...fieldError
+  }
+}
+    ${PostMutationStatusesFragmentDoc}
+${PostWithUserFragmentDoc}
+${FieldErrorFragmentDoc}`;
+export const UserMutationStatusesFragmentDoc = gql`
+    fragment userMutationStatuses on UserMutationResponse {
   code
   success
   message
@@ -282,15 +326,9 @@ export const UserResponseFragmentDoc = gql`
   email
 }
     `;
-export const FieldErrorFragmentDoc = gql`
-    fragment fieldError on FieldError {
-  field
-  message
-}
-    `;
 export const UserMutationResponseFragmentDoc = gql`
     fragment userMutationResponse on UserMutationResponse {
-  ...mutationStatuses
+  ...userMutationStatuses
   user {
     ...userResponse
   }
@@ -298,7 +336,7 @@ export const UserMutationResponseFragmentDoc = gql`
     ...fieldError
   }
 }
-    ${MutationStatusesFragmentDoc}
+    ${UserMutationStatusesFragmentDoc}
 ${UserResponseFragmentDoc}
 ${FieldErrorFragmentDoc}`;
 export const ChangePasswordDocument = gql`
@@ -343,19 +381,10 @@ export type ChangePasswordMutationOptions = Apollo.BaseMutationOptions<ChangePas
 export const CreatePostDocument = gql`
     mutation CreatePost($createPostInput: CreatePostInput!) {
   createPost(createPostInput: $createPostInput) {
-    code
-    success
-    message
-    post {
-      ...postWithUser
-    }
-    errors {
-      ...fieldError
-    }
+    ...postMutationResponse
   }
 }
-    ${PostWithUserFragmentDoc}
-${FieldErrorFragmentDoc}`;
+    ${PostMutationResponseFragmentDoc}`;
 export type CreatePostMutationFn = Apollo.MutationFunction<CreatePostMutation, CreatePostMutationVariables>;
 
 /**
@@ -382,6 +411,39 @@ export function useCreatePostMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreatePostMutationHookResult = ReturnType<typeof useCreatePostMutation>;
 export type CreatePostMutationResult = Apollo.MutationResult<CreatePostMutation>;
 export type CreatePostMutationOptions = Apollo.BaseMutationOptions<CreatePostMutation, CreatePostMutationVariables>;
+export const DeletePostDocument = gql`
+    mutation DeletePost($id: ID!) {
+  deletePost(id: $id) {
+    ...postMutationStatuses
+  }
+}
+    ${PostMutationStatusesFragmentDoc}`;
+export type DeletePostMutationFn = Apollo.MutationFunction<DeletePostMutation, DeletePostMutationVariables>;
+
+/**
+ * __useDeletePostMutation__
+ *
+ * To run a mutation, you first call `useDeletePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeletePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deletePostMutation, { data, loading, error }] = useDeletePostMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeletePostMutation(baseOptions?: Apollo.MutationHookOptions<DeletePostMutation, DeletePostMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeletePostMutation, DeletePostMutationVariables>(DeletePostDocument, options);
+      }
+export type DeletePostMutationHookResult = ReturnType<typeof useDeletePostMutation>;
+export type DeletePostMutationResult = Apollo.MutationResult<DeletePostMutation>;
+export type DeletePostMutationOptions = Apollo.BaseMutationOptions<DeletePostMutation, DeletePostMutationVariables>;
 export const ForgotPasswordDocument = gql`
     mutation ForgotPassword($forgotPasswordInput: ForgotPasswordInput!) {
   forgotPassword(forgotPasswordInput: $forgotPasswordInput)
@@ -509,6 +571,39 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const UpdatePostDocument = gql`
+    mutation UpdatePost($updatePostInput: UpdatePostInput!) {
+  updatePost(updatePostInput: $updatePostInput) {
+    ...postMutationResponse
+  }
+}
+    ${PostMutationResponseFragmentDoc}`;
+export type UpdatePostMutationFn = Apollo.MutationFunction<UpdatePostMutation, UpdatePostMutationVariables>;
+
+/**
+ * __useUpdatePostMutation__
+ *
+ * To run a mutation, you first call `useUpdatePostMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePostMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePostMutation, { data, loading, error }] = useUpdatePostMutation({
+ *   variables: {
+ *      updatePostInput: // value for 'updatePostInput'
+ *   },
+ * });
+ */
+export function useUpdatePostMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePostMutation, UpdatePostMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdatePostMutation, UpdatePostMutationVariables>(UpdatePostDocument, options);
+      }
+export type UpdatePostMutationHookResult = ReturnType<typeof useUpdatePostMutation>;
+export type UpdatePostMutationResult = Apollo.MutationResult<UpdatePostMutation>;
+export type UpdatePostMutationOptions = Apollo.BaseMutationOptions<UpdatePostMutation, UpdatePostMutationVariables>;
 export const MeDocument = gql`
     query Me {
   me {
@@ -587,6 +682,7 @@ export const PostDocument = gql`
     id
     title
     text
+    userId
   }
 }
     `;

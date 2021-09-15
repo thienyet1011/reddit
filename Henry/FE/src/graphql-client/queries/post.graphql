@@ -3,5 +3,6 @@ query Post ($id: ID!) {
         id
         title
         text
+        userId
     }
 }

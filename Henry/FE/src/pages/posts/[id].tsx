@@ -6,6 +6,7 @@ import {
   Button,
   Flex,
   Heading,
+  IconButton,
   Spinner,
 } from "@chakra-ui/react";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -16,6 +17,8 @@ import { limit } from "..";
 import Layout from "../../components/Layout";
 import { PostDocument, PostIdsDocument, PostIdsQuery, PostQuery, usePostQuery } from "../../generated/graphql";
 import { addApolloState, initializeApollo } from "../../lib/apolloClient";
+import { EditIcon } from "@chakra-ui/icons";
+import PostEditDeleteButtons from "../../components/PostEditDeleteButtons";
 
 const Post = () => {
   const router = useRouter();
@@ -24,6 +27,14 @@ const Post = () => {
       id: router.query.id as string,
     },
   });
+
+  if (loading) {
+    return (
+      <Flex justifyContent="center" alignItems="center" maxH="100vh">
+        <Spinner />
+      </Flex>
+    );
+  }
 
   if (error || !data?.post) {
     return (
@@ -46,22 +57,21 @@ const Post = () => {
 
   return (
     <Layout>
-      {loading ? (
-        <Flex justifyContent="center" alignItems="center" maxH="100vh">
-          <Spinner />
-        </Flex>
-      ) : (
-        <React.Fragment>
-          <Heading mb={4}>{data.post.title}</Heading>
-          <Box mb={4}>{data.post.text}</Box>
+      <React.Fragment>
+        <Heading mb={4}>{data.post.title}</Heading>
+        <Box mb={4}>{data.post.text}</Box>
+
+        <Flex mt={4} justifyContent="space-between" alignItems="center">
+          <PostEditDeleteButtons
+            postId={data.post.id}
+            postUserId={data.post.userId.toString()}
+          />
 
           <NextLink href="/">
-            <Box mt={4}>
-              <Button>Back to Home page</Button>
-            </Box>
+            <Button>Back to Home page</Button>
           </NextLink>
-        </React.Fragment>
-      )}
+        </Flex>
+      </React.Fragment>
     </Layout>
   );
 };

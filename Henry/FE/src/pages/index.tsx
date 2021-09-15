@@ -1,17 +1,16 @@
+import { NetworkStatus } from "@apollo/client";
 import { Box, Button, Flex, Heading, Spinner, Stack, Text } from "@chakra-ui/react";
-import React from "react";
+import { GetStaticProps } from "next";
 import NextLink from 'next/link';
-import { PostsDocument, useMeQuery, usePostsQuery } from "../generated/graphql";
-import { addApolloState, initializeApollo } from "../lib/apolloClient";
+import React from "react";
 import Layout from "../components/Layout";
 import PostEditDeleteButton from "../components/PostEditDeleteButtons";
-import { NetworkStatus } from "@apollo/client";
-import { GetStaticProps } from "next";
+import { PostsDocument, usePostsQuery } from "../generated/graphql";
+import { addApolloState, initializeApollo } from "../lib/apolloClient";
 
 export const limit = 3;
 
 const Index = () => {
-  const { data: meData } = useMeQuery();
   const { data, loading, fetchMore, networkStatus } = usePostsQuery({
     variables: {
       limit
@@ -55,7 +54,7 @@ const Index = () => {
                 <Flex align="center">
                   <Text mt={4}>{post.textSnippet}</Text>
                   <Box ml="auto">
-                    {meData?.me?.id === post.user.id && <PostEditDeleteButton />}
+                      <PostEditDeleteButton postId={post.id} postUserId={post.user.id} />
                   </Box>
                 </Flex>
               </Box>

@@ -28,7 +28,7 @@ const Login = () => {
   // https://www.graphql-code-generator.com/docs/getting-started/installation
   const [loginUser, { loading: _loginUserLoading, data }] = useLoginMutation();
 
-  const onLoginSubmit = async (
+const onLoginSubmit = async (
     values: LoginInput,
     { setErrors }: FormikHelpers<LoginInput>
   ) => {
