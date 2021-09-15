@@ -1,4 +1,3 @@
-import { User } from './User';
 import { Field, ID, ObjectType } from "type-graphql";
 import {
   BaseEntity,
@@ -6,9 +5,12 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from "typeorm";
+import { User } from './User';
+import { Vote } from './Vote';
 
 @ObjectType()
 @Entity()
@@ -27,7 +29,18 @@ export class Post extends BaseEntity {
 
   @Field(_type => User)
   @ManyToOne(() => User, user => user.posts)
-  user: User
+  user: User;
+
+  @Field(_type => [Vote])
+  @OneToMany(() => Vote, vote => vote.post)
+  votes: Vote[];
+
+  @Field() // sum(up_vote) - sum(down_vote)
+  @Column({default: 0})
+  points!: number;
+
+  @Field()
+  voteType: number;
 
   @Field()
   @Column()

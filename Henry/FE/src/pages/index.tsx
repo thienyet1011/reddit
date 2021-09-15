@@ -1,10 +1,11 @@
 import { NetworkStatus } from "@apollo/client";
 import { Box, Button, Flex, Heading, Spinner, Stack, Text } from "@chakra-ui/react";
-import { GetStaticProps } from "next";
+import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import NextLink from 'next/link';
 import React from "react";
 import Layout from "../components/Layout";
 import PostEditDeleteButton from "../components/PostEditDeleteButtons";
+import VoteSection from "../components/VoteSection";
 import { PostsDocument, usePostsQuery } from "../generated/graphql";
 import { addApolloState, initializeApollo } from "../lib/apolloClient";
 
@@ -45,6 +46,7 @@ const Index = () => {
         <Stack spacing={8}>
           {data?.posts?.paginatedPosts?.map((post) => (
             <Flex key={post.id} p={5} shadow="md" borderWidth="1px">
+              <VoteSection post={post} />
               <Box flex={1}>
                 <NextLink href={`/posts/${post.id}`}>
                   <Heading fontSize="xl">{post.title}</Heading>
@@ -79,8 +81,8 @@ const Index = () => {
   );
 };
 
-export const getStaticProps: GetStaticProps = async () => {
-  const apolloClient = initializeApollo();
+export const getServerSideProps: GetServerSideProps = async (context: GetServerSidePropsContext) => {
+  const apolloClient = initializeApollo({headers: context.req.headers});
 
   await apolloClient.query({
     query: PostsDocument,
