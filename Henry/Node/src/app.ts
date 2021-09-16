@@ -1,3 +1,4 @@
+import { buildDataLoaders } from './utils/dataLoaders';
 import { PostResolver } from './resolvers/post';
 require('dotenv').config();
 import 'reflect-metadata';
@@ -61,16 +62,23 @@ const main = async () => {
     }));
 
     const apolloServer = new ApolloServer({
-        schema: await buildSchema({
-            resolvers: [HelloResolver, UserResolver, PostResolver], 
-            validate: false,
+      schema: await buildSchema({
+        resolvers: [HelloResolver, UserResolver, PostResolver],
+        validate: false,
+      }),
+      plugins: [
+        ApolloServerPluginLandingPageGraphQLPlayground({
+          settings: {
+            "request.credentials": "include",
+          },
         }),
-        plugins: [ApolloServerPluginLandingPageGraphQLPlayground({
-            settings: {
-                "request.credentials": "include"
-            }
-        })],
-        context: ({req, res}): Context => ({req, res, connection}),
+      ],
+      context: ({ req, res }): Context => ({
+        req,
+        res,
+        connection,
+        dataLoaders: buildDataLoaders(),
+      }),
     });
 
     await apolloServer.start();
