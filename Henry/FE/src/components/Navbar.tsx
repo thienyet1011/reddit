@@ -1,3 +1,4 @@
+import { gql, Reference } from '@apollo/client';
 import { Box, Button, Flex, Heading, Link } from '@chakra-ui/react';
 import NextLink from 'next/link';
 import React from 'react';
@@ -11,8 +12,31 @@ const Navbar = () => {
         await logout({update (cache, { data }) {
             if (data?.logout)
                 cache.writeQuery<MeQuery>({
-                    query: MeDocument,
-                    data: { me: null }
+                  query: MeDocument,
+                  data: { me: null }
+                });
+
+                cache.modify({
+                  fields: {
+                    posts(existing) {
+                      // Set voteType field equal 0 value in posts after Logout
+                      existing.paginatedPosts.forEach((post: Reference) => {
+                        cache.writeFragment({
+                          id: post.__ref,
+                          fragment: gql`
+                            fragment VoteType on Post {
+                              voteType
+                            }
+                          `,
+                          data: {
+                            voteType: 0
+                          }
+                        });
+                      });
+
+                      return existing;
+                    }
+                  }
                 });
         }});
     }

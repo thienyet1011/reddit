@@ -1,10 +1,13 @@
-import { ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, from, HttpLink, InMemoryCache, NormalizedCacheObject } from '@apollo/client';
 // import { concatPagination } from '@apollo/client/utilities';
 import merge from 'deepmerge';
 import { IncomingHttpHeaders } from 'http';
 import isEqual from 'lodash/isEqual';
 import { useMemo } from 'react';
 import { Post } from './../generated/graphql';
+import fetch from 'isomorphic-unfetch';
+import { onError } from '@apollo/client/link/error';
+import router from 'next/router';
 
 export const APOLLO_STATE_PROP_NAME = '__APOLLO_STATE__';
 
@@ -13,6 +16,19 @@ let apolloClient: ApolloClient<NormalizedCacheObject>;
 interface IApolloStateProps {
     [APOLLO_STATE_PROP_NAME]?: NormalizedCacheObject
 }
+
+// Hanlde response errors from graphql server
+const errorLink = onError((errors) => {
+  console.log("errors: ", errors);
+  if (
+    errors.graphQLErrors &&
+    errors.graphQLErrors[0].extensions?.code === "UNAUTHENTICATED"  && 
+    errors.response
+  ) {
+    errors.response.errors = undefined; // Make Next JS not show error on page
+    router.replace("/login");
+  }
+});
 
 function createApolloClient(headers: IncomingHttpHeaders | null = null) {
   const enhanceFetch = (url: RequestInfo, init: RequestInit) => {
@@ -27,13 +43,15 @@ function createApolloClient(headers: IncomingHttpHeaders | null = null) {
     });
   }
 
+  const httpLink = new HttpLink({
+    uri: 'http://localhost:9000/graphql', // Server URL (must be absolute)
+    credentials: 'include', // Additional fetch() options like `credentials` or `headers`
+    fetch: enhanceFetch
+  });
+
   return new ApolloClient({
     ssrMode: typeof window === 'undefined',
-    link: new HttpLink({
-      uri: 'http://localhost:9000/graphql', // Server URL (must be absolute)
-      credentials: 'include', // Additional fetch() options like `credentials` or `headers`
-      fetch: enhanceFetch
-    }),
+    link: from([errorLink, httpLink]),
     cache: new InMemoryCache({
       // Change apollo cache follow by some fields
       typePolicies: {

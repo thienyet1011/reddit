@@ -9,9 +9,10 @@ import {
   LoginInput,
   MeDocument,
   MeQuery,
-  useLoginMutation,
+  useLoginMutation
 } from "../generated/graphql";
 import { mapFieldErrors } from "../helpers/mapFieldErrors";
+import { initializeApollo } from "../lib/apolloClient";
 import { useAuth } from "../utils/useAuth";
 
 const Login = () => {
@@ -26,7 +27,7 @@ const Login = () => {
   // useLoginMutation (../generated/graphql.tsx) using graphql code generator to create
   // when run graphql codegen must be start graphql-server
   // https://www.graphql-code-generator.com/docs/getting-started/installation
-  const [loginUser, { loading: _loginUserLoading, data }] = useLoginMutation();
+  const [loginUser, { loading: _loginUserLoading }] = useLoginMutation();
 
 const onLoginSubmit = async (
     values: LoginInput,
@@ -55,6 +56,18 @@ const onLoginSubmit = async (
     if (response.data?.login.errors) {
       setErrors(mapFieldErrors(response.data.login.errors));
     } else if (response.data?.login.user) {
+      toast({
+        title: "Welcome",
+        description: "Login in successfully.",
+        status: "success",
+        duration: 9000,
+        isClosable: true,
+      });
+
+      // Clear cache in apollo
+      const apolloClient = initializeApollo();
+      apolloClient.resetStore();
+
       router.push("/");
     }
   };
@@ -67,15 +80,6 @@ const onLoginSubmit = async (
     </Flex>
   ) : (
     <Container size="small">
-      {data && data.login.success && 
-        toast({
-          title: "Welcome",
-          description: "Login in successfully.",
-          status: "success",
-          duration: 9000,
-          isClosable: true,
-        })
-      }
       <Formik initialValues={initialValues} onSubmit={onLoginSubmit}>
         {({ values, isSubmitting }) => {
           console.log('values: ', values);

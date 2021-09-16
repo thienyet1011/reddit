@@ -41,12 +41,7 @@ const main = async () => {
 
     // Session/cookie store
     const mongoUrl = `mongodb+srv://${process.env.SESSION_DB_USERNAME_DEV}:${process.env.SESSION_DB_PASSWORD_DEV}@reddit.n5rwj.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
-    await mongoose.connect(mongoUrl, {
-        useCreateIndex: true,
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false
-    });
+    await mongoose.connect(mongoUrl);
 
     console.log('Mongo connected');
 
