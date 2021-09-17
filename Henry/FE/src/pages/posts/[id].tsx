@@ -5,20 +5,17 @@ import {
   Box,
   Button,
   Flex,
-  Heading,
-  IconButton,
-  Spinner,
+  Heading, Spinner
 } from "@chakra-ui/react";
 import { GetStaticPaths, GetStaticProps } from "next";
+import NextLink from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
-import NextLink from "next/link";
 import { limit } from "..";
 import Layout from "../../components/Layout";
+import PostEditDeleteButtons from "../../components/PostEditDeleteButtons";
 import { PostDocument, PostIdsDocument, PostIdsQuery, PostQuery, usePostQuery } from "../../generated/graphql";
 import { addApolloState, initializeApollo } from "../../lib/apolloClient";
-import { EditIcon } from "@chakra-ui/icons";
-import PostEditDeleteButtons from "../../components/PostEditDeleteButtons";
 
 const Post = () => {
   const router = useRouter();
