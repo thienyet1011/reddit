@@ -60,6 +60,7 @@ const main = async () => {
 
     console.log('Mongo connected');
 
+    app.set('trust proxy', 1);
     app.use(session({
         name: COOKIE_NAME,
         store: MongoStore.create({ mongoUrl }),
@@ -67,8 +68,8 @@ const main = async () => {
             maxAge: 1000 * 60 * 60, // 1 hour
             httpOnly: true, // JS frontend cannot access the cookie
             secure: __prod__, // cookie only works in https
-            sameSite: 'lax', // protection agains csrf
-            domain: __prod__ ? '.vercel.app' : undefined
+            sameSite: 'none', // protection agains csrf
+            // domain: __prod__ ? '.vercel.app' : undefined
         },
         secret: process.env.SESSION_SECRET_DEV as string,
         saveUninitialized: false, // don't save empty session, right from the start
