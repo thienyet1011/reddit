@@ -1,42 +1,56 @@
-import { buildDataLoaders } from './utils/dataLoaders';
-import { PostResolver } from './resolvers/post';
-require('dotenv').config();
-import 'reflect-metadata';
-
-import express from 'express';
-import mongoose from 'mongoose';
-
-import { createConnection } from 'typeorm';
-import { buildSchema } from 'type-graphql';
-import { ApolloServer } from 'apollo-server-express';
+import { mongoose } from '@typegoose/typegoose';
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import { ApolloServer } from 'apollo-server-express';
 import MongoStore from 'connect-mongo';
-import session from 'express-session';
 import cors from 'cors';
-
-import { User } from './entities/User';
-import { Post } from './entities/Post';
-import { HelloResolver } from './resolvers/hello';
-import { UserResolver } from './resolvers/user';
+import express from 'express';
+import session from 'express-session';
+import path from 'path';
+import 'reflect-metadata';
+import { buildSchema } from 'type-graphql';
+import { createConnection } from 'typeorm';
 import { COOKIE_NAME, __prod__ } from './constants';
-import { Context } from './types/Context';
+import { Post } from './entities/Post';
+import { User } from './entities/User';
 import { Vote } from './entities/Vote';
+import { HelloResolver } from './resolvers/hello';
+import { PostResolver } from './resolvers/post';
+import { UserResolver } from './resolvers/user';
+import { Context } from './types/Context';
+import { buildDataLoaders } from './utils/dataLoaders';
+require('dotenv').config();
 
+// Các biến môi trường sẽ được cấu hình trong app/settings "Config Vars"
 const main = async () => {
     const connection = await createConnection({
-        type: 'postgres',
-        database: 'reddit',
-        username: process.env.DB_USERNAME_DEV,
-        password: process.env.DB_PASSWORD_DEV,
-        logging: true,
-        synchronize: true,
-        entities: [User, Post, Vote],
+      type: "postgres",
+      ...(__prod__
+        ? { url: process.env.DATABASE_URL }
+        : {
+            database: "reddit",
+            username: process.env.DB_USERNAME_DEV,
+            password: process.env.DB_PASSWORD_DEV,
+          }),
+      logging: true,
+      ...(__prod__ ? {
+        extra: {
+            ssl: {
+                rejectUnauthorized: false
+            }
+        }, 
+        ssl: true
+      } : {}),
+      ...(__prod__ ? {} : {synchronize: true}) ,
+      entities: [User, Post, Vote],
+      migrations: [path.join(__dirname, '/migrations/*')]
     });
+
+    if (__prod__) await connection.runMigrations();
 
     const app = express();
 
     app.use(cors({
-        origin: 'http://localhost:3000',
+        origin: __prod__ ? process.env.CORS_ORIGIN_PROD : process.env.CORS_ORIGIN_DEV,
         credentials: true, // Receive cookie from client
     }));
 
@@ -46,7 +60,6 @@ const main = async () => {
 
     console.log('Mongo connected');
 
-	// app.set('trust proxy', 1);
     app.use(session({
         name: COOKIE_NAME,
         store: MongoStore.create({ mongoUrl }),
@@ -55,6 +68,7 @@ const main = async () => {
             httpOnly: true, // JS frontend cannot access the cookie
             secure: __prod__, // cookie only works in https
             sameSite: 'lax', // protection agains csrf
+            domain: __prod__ ? '.vercel.app' : undefined
         },
         secret: process.env.SESSION_SECRET_DEV as string,
         saveUninitialized: false, // don't save empty session, right from the start
