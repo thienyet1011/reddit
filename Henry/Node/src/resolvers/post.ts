@@ -205,6 +205,7 @@ export class PostResolver {
         }
       }
 
+      await Vote.delete({postId: id});
       const result = await Post.delete(id);
 
       return {
